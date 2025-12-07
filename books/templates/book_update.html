@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Book - Ebook Hub{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'books_list' %}" class="text-decoration-none">
+                <i class="bi bi-house me-1"></i>Library
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'book_detail' object.pk %}" class="text-decoration-none">
+                {{ object.title|truncatechars:30 }}
+            </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Edit Book
+        </li>
+    </ol>
+</nav>
+
+<div class="row align-items-center mb-4">
+    <div class="col">
+        <h1 class="h2 text-primary mb-1">
+            <i class="bi bi-pencil-square me-2"></i>Edit Book
+        </h1>
+        <p class="text-muted mb-0">Update information for "{{ object.title }}"</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-book me-2"></i>Book Information
+                </h5>
+            </div>
+
+            <div class="card-body p-4">
+                <div class="alert alert-info d-flex align-items-start mb-4">
+                    <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+                    <div>
+                        <strong>Editing:</strong> {{ object.title }}
+                        <br>
+                        <small>Changes will be saved permanently.</small>
+                    </div>
+                </div>
+
+                {% if form.errors %}
+                    <div class="alert alert-danger d-flex align-items-start mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+                       <div>
+                        <strong>Please correct the errors below:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Fields marked with * are required</li>
+                        </ul>
+                    </div>
+                    </div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data" id="bookForm" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label for="id_title" class="form-label fw-semibold">
+                                <i class="bi bi-book me-2 text-primary"></i>Title *
+                            </label>
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="id_title"
+                                   name="title"
+                                   value="{{ object.title }}"
+                                   placeholder="Enter book title"
+                                   required>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Full name of the work
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="id_author" class="form-label fw-semibold">
+                                <i class="bi bi-person me-2 text-primary"></i>Author *
+                            </label>
+                            <div class="input-group">
+                                <select class="form-select form-select-lg"
+                                        id="id_author"
+                                        name="author"
+                                        required>
+                                   <option value="">Select an author</option>
+                                    {% for author in authors %}
+                                    <option value="{{ author.id }}"
+                                         {% if author.id|stringformat:"s" == object.author.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ author.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                             <div class="form-text">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                Select from list or <a href="{% url 'new_author' %}">add new author</a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="id_literary_genre" class="form-label fw-semibold">
+                                <i class="bi bi-tag me-2 text-primary"></i>Literary Genre
+                            </label>
+                            <div class="input-group">
+                                <select class="form-select form-select-lg"
+                                        id="id_literary_genre"
+                                        name="literary_genre">
+                                    <option value="">Select a genre</option>
+                                    {% for genre in genres %}
+                                    <option value="{{ genre.id }}"
+                                     {% if object.literary_genre and genre.id == object.literary_genre.id %}selected{% endif %}>
+                                     {{ genre.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-question-circle me-1"></i>
+                                Select from list or <a href="{% url 'new_genre' %}">add new genre</a>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="id_pages" class="form-label fw-semibold">
+                                <i class="bi bi-file-text me-2 text-primary"></i>Number of Pages
+                            </label>
+                            <input type="number"
+                                   class="form-control form-control-lg"
+                                   id="id_pages"
+                                   name="number_page"
+                                   value="{{ object.number_page }}"
+                                   placeholder="Ex: 350"
+                                   min="1"
+                                   max="9999">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="id_publication_year" class="form-label fw-semibold">
+                                <i class="bi bi-calendar3 me-2 text-primary"></i>Publication Year *
+                            </label>
+                            <input type="number"
+                                   class="form-control form-control-lg"
+                                   id="id_publication_year"
+                                   name="publication_year"
+                                   value="{{ object.publication_year }}"
+                                   placeholder="Ex: 2023"
+                                   min="1000"
+                                   max="2030"
+                                   required>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="id_synopsis" class="form-label fw-semibold">
+                                <i class="bi bi-journal-text me-2 text-primary"></i>Synopsis
+                            </label>
+                            <textarea class="form-control"
+                                      id="id_synopsis"
+                                      name="synopsis"
+                                      rows="4"
+                                      placeholder="Briefly describe the plot...">{{ object.synopsis }}</textarea>
+                            <div class="form-text">
+                                <i class="bi bi-chat-left-text me-1"></i>
+                                Book summary
+                                <span class="float-end text-muted" id="charCount">0/1000 characters</span>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="id_photo" class="form-label fw-semibold">
+                                <i class="bi bi-image me-2 text-primary"></i>Cover Photo
+                            </label>
+
+                            {% if object.photo %}
+                            <div class="mb-3">
+                                <p class="text-muted small mb-2">Current cover:</p>
+                                <img src="{{ object.photo.url }}"
+                                     class="img-thumbnail"
+                                     alt="{{ object.title }}"
+                                     style="max-height: 200px;"
+                                     id="currentPhoto">
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="removePhoto"
+                                           name="remove_photo">
+                                    <label class="form-check-label text-danger" for="removePhoto">
+                                        <i class="bi bi-trash me-1"></i>Remove current cover
+                                    </label>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="card border-2 border-dashed">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3">
+                                        <i class="bi bi-cloud-upload text-muted display-4"></i>
+                                    </div>
+                                    <input type="file"
+                                           class="form-control"
+                                           id="id_photo"
+                                           name="photo"
+                                           accept="image/*">
+                                    <div class="form-text mt-3">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        {% if object.photo %}
+                                        Select a new cover to replace the current one
+                                        {% else %}
+                                        Accepted formats: JPG, PNG, GIF (max 5MB)
+                                        {% endif %}
+                                    </div>
+
+                                    <div id="imagePreview" class="mt-3" style="display: none;">
+                                        <p class="text-muted small mb-2">New cover:</p>
+                                        <img id="previewImg" class="img-thumbnail" style="max-height: 200px;">
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImage()">
+                                                <i class="bi bi-x me-1"></i>Cancel new cover
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-4">
+                        <div class="col-md-6">
+                            <a href="{% url 'book_detail' object.pk %}"
+                               class="btn btn-outline-secondary btn-lg w-100">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg w-100"
+                                    id="submitBtn">
+                                <i class="bi bi-check-circle me-2"></i>Update Book
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 bg-light mt-4">
+            <div class="card-body">
+                <h6 class="fw-bold text-primary mb-3">
+                    <i class="bi bi-info-square me-2"></i>Current Information:
+                </h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Original Title:</small>
+                        <strong>{{ object.title }}</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Author:</small>
+                        <strong>{{ object.author }}</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Year:</small>
+                        <strong>{{ object.publication_year }}</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Genre:</small>
+                        <strong>{{ object.literary_genre|default:"Undefined" }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bookForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const synopsisField = document.getElementById('id_synopsis');
+    const charCount = document.getElementById('charCount');
+    const photoInput = document.getElementById('id_photo');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const removePhotoCheckbox = document.getElementById('removePhoto');
+    const currentPhoto = document.getElementById('currentPhoto');
+
+    // Character counter for synopsis
+    if (synopsisField && charCount) {
+        // Initial count
+        updateCharCount();
+
+        synopsisField.addEventListener('input', updateCharCount);
+
+        function updateCharCount() {
+            const currentLength = synopsisField.value.length;
+            const maxLength = 1000;
+            charCount.textContent = `${currentLength}/${maxLength} characters`;
+
+            if (currentLength > maxLength) {
+                charCount.classList.add('text-danger');
+            } else {
+                charCount.classList.remove('text-danger');
+            }
+        }
+    }
+
+    // Image preview functionality
+    if (photoInput) {
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File too large! Please select an image smaller than 5MB.');
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    imagePreview.style.display = 'block';
+
+                    // If replacing current photo, uncheck remove checkbox
+                    if (removePhotoCheckbox) {
+                        removePhotoCheckbox.checked = false;
+                        removePhotoCheckbox.disabled = true;
+                        if(currentPhoto) currentPhoto.style.opacity = '0.5';
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Handle remove checkbox
+    if (removePhotoCheckbox && currentPhoto) {
+        removePhotoCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                currentPhoto.style.opacity = '0.3';
+                // If checking remove, clear any new upload
+                if (photoInput.value) {
+                    removeImage();
+                }
+            } else {
+                currentPhoto.style.opacity = '1';
+            }
+        });
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+
+        // Restore if error
+        setTimeout(() => {
+            if (submitBtn.disabled) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }, 10000);
+    });
+});
+
+// Function to cancel new image upload
+function removeImage() {
+    const photoInput = document.getElementById('id_photo');
+    const imagePreview = document.getElementById('imagePreview');
+    const removePhotoCheckbox = document.getElementById('removePhoto');
+    const currentPhoto = document.getElementById('currentPhoto');
+
+    photoInput.value = '';
+    imagePreview.style.display = 'none';
+
+    if (removePhotoCheckbox) {
+        removePhotoCheckbox.disabled = false;
+        if (!removePhotoCheckbox.checked && currentPhoto) {
+            currentPhoto.style.opacity = '1';
+        }
+    }
+}
+</script>
+{% endblock %}
